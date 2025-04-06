@@ -13,8 +13,8 @@ class Type:
         self.space_id = ""
         self.id = ""
         self.name = ""
-        self.icon = ""
-        self.unique_key = ""
+        self.icon = {}
+        self.key = ""
         self.template_id = ""
 
     def get_templates(
@@ -50,4 +50,7 @@ class Type:
             )
 
     def __repr__(self):
-        return f"<Type(name={self.name}, icon={self.icon})>"
+        if "emoji" in self.icon:
+            return f"<Type(name={self.name}, icon={self.icon['emoji']})>"
+        else:
+            return f"<Type(name={self.name}, icon={self.icon['name']})>"
