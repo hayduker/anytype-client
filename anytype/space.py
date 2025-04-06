@@ -1,42 +1,39 @@
-import requests
 from copy import deepcopy
 
 from .type import Type
 from .object import Object
 from .member import Member
-from .config import END_POINTS
 from .error import ResponseHasError
+from .icon import Icon
+from .api import apiEndpoints
 
 
 class Space:
     def __init__(self):
         self._headers = {}
+        self._apiEndpoints: apiEndpoints | None = None
         self.name = ""
         self.id = ""
         self._all_types = []
 
-    def get_object(self, objectId: str, offset=0, limit=100) -> Object:
-        url = END_POINTS["getObject"].format(self.id, objectId)
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(url, headers=self._headers, params=params)
-        ResponseHasError(response)
-        response_data = response.json()
+    def get_object(self, objectId: str) -> Object:
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.getObject(self.id, objectId)
         obj = Object()
-        obj._headers = self._headers
-        for key, value in response_data.items():
+        obj._apiEndpoints = self._apiEndpoints
+        for key, value in response_data.get("object", {}).items():
             obj.__dict__[key] = value
         return obj
 
     def get_objects(self, offset=0, limit=100) -> list[Object]:
-        url = END_POINTS["getObjects"].format(self.id)
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(url, headers=self._headers, params=params)
-        ResponseHasError(response)
-        response_data = response.json()
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.getObjects(self.id, offset, limit)
         results = []
         for data in response_data.get("data", []):
             new_item = Object()
-            new_item._headers = self._headers
+            new_item._apiEndpoints = self._apiEndpoints
             for key, value in data.items():
                 new_item.__dict__[key] = value
             results.append(new_item)
@@ -44,11 +41,10 @@ class Space:
         return results
 
     def get_types(self, offset=0, limit=100) -> list[Type]:
-        url = END_POINTS["getTypes"].format(self.id)
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(url, headers=self._headers, params=params)
-        ResponseHasError(response)
-        response_data = response.json()
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+
+        response_data = self._apiEndpoints.getTypes(self.id, offset, limit)
         results = []
         for data in response_data.get("data", []):
             new_item = Type()
@@ -61,11 +57,9 @@ class Space:
         return results
 
     def get_members(self, offset: int = 0, limit: int = 100) -> list[Member]:
-        url = END_POINTS["getMembers"].format(self.id)
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(url, headers=self._headers, params=params)
-        ResponseHasError(response)
-        response_data = response.json()
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.getMembers(self.id, offset, limit)
         results = []
         for data in response_data.get("data", []):
             new_item = Member()
@@ -84,22 +78,17 @@ class Space:
         raise ValueError("Type not found")
 
     def search(self, query, offset=0, limit=10) -> list[Object]:
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+
         if self.id == "":
             raise ValueError("Space ID is required")
-        url = END_POINTS["search"].format(self.id)
-        search_request = {
-            "query": query,
-        }
-        options = {"offset": offset, "limit": limit}
-        response = requests.post(
-            url, json=search_request, headers=self._headers, params=options
-        )
-        ResponseHasError(response)
-        response_data = response.json()
+
+        response = self._apiEndpoints.search(self.id, query, offset, limit)
         results = []
-        for data in response_data.get("data", []):
+        for data in response.get("data", []):
             new_item = Object()
-            new_item._headers = self._headers
+            new_item._apiEndpoints = self._apiEndpoints
             for key, value in data.items():
                 new_item.__dict__[key] = value
             results.append(new_item)
@@ -107,25 +96,38 @@ class Space:
         return results
 
     def create_object(self, obj: Object, type: Type) -> Object:
-        url = END_POINTS["createObject"].format(self.id)
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        icon = {}
+        if isinstance(obj.icon, Icon):
+            icon = obj.icon._get_json()
+        else:
+            raise ValueError("Invalid icon type")
+
         object_data = {
-            "icon": obj.icon,
+            "icon": icon,
             "name": obj.name,
             "description": obj.description,
             "body": obj.body,
             "source": "",
             "template_id": type.template_id,
-            "object_type_unique_key": type.unique_key,
+            "type_key": type.key,
         }
 
         obj_clone = deepcopy(obj)
-        obj_clone._headers = self._headers
+        obj_clone._apiEndpoints = self._apiEndpoints
+        obj_clone._apiEndpoints = self._apiEndpoints
         obj_clone.space_id = self.id
-        response = requests.post(url, headers=self._headers, json=object_data)
-        ResponseHasError(response)
 
-        for key, value in response.json()["object"].items():
-            obj_clone.__dict__[key] = value
+        response = self._apiEndpoints.createObject(self.id, object_data)
+
+        for key, value in response.get("object", {}).items():
+            if key == "icon":
+                icon = Icon()
+                icon._update_with_json(value)
+            else:
+                obj_clone.__dict__[key] = value
+
         return obj_clone
 
     def __repr__(self):
