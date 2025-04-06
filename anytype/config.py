@@ -3,6 +3,23 @@ API_CONFIG = {
     "apiAppName": "PythonClient",
 }
 
+# getListViews: (spaceId: string, listId: string, options: { offset: number; limit: number }) => ({
+#   url: `${apiUrl}/spaces/${spaceId}/lists/${listId}/views${encodeQueryParams(options)}`,
+#   method: "GET",
+# }),
+# getObjectsInList: (spaceId: string, listId: string, viewId: string, options: { offset: number; limit: number }) => ({
+#   url: `${apiUrl}/spaces/${spaceId}/lists/${listId}/${viewId}/objects${encodeQueryParams(options)}`,
+#   method: "GET",
+# }),
+# addObjectsToList: (spaceId: string, listId: string) => ({
+#   url: `${apiUrl}/spaces/${spaceId}/lists/${listId}/objects`,
+#   method: "POST",
+# }),
+# removeObjectsFromList: (spaceId: string, listId: string, objectId: string) => ({
+#   url: `${apiUrl}/spaces/${spaceId}/lists/${listId}/objects/${objectId}`,
+#   method: "DELETE",
+# }),
+
 END_POINTS = {
     "auth": "{}/auth/token".format(API_CONFIG["apiUrl"]),
     "createObject": "{}/spaces/{}/objects".format(API_CONFIG["apiUrl"], "{}"),
@@ -19,9 +36,8 @@ END_POINTS = {
         API_CONFIG["apiUrl"],
         "{}",
     ),
-    "getObject": "{}/spaces/{}/objects/".format(
-        API_CONFIG["apiUrl"],
-        "{}",
+    "getObject": "{}/spaces/{}/objects/{}".format(
+        API_CONFIG["apiUrl"], "{}", "{}"
     ),
     "getObjects": "{}/spaces/{}/objects".format(API_CONFIG["apiUrl"], "{}"),
     "getSpaces": "{}/spaces".format(API_CONFIG["apiUrl"]),
