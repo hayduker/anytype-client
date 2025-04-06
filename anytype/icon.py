@@ -9,8 +9,10 @@ class Icon:
     def _update_with_json(self, json: dict) -> None:
         if json["format"] == "emoji":
             self.emoji = json["format"]
+            self.format = "emoji"
         elif json["format"] == "icon":
             self.icon = json["icon"]
+            self.format = "icon"
         elif json["format"] == "file":
             self.file = json["file"]
             self.format = "file"

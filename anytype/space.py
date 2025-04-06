@@ -3,14 +3,12 @@ from copy import deepcopy
 from .type import Type
 from .object import Object
 from .member import Member
-from .error import ResponseHasError
 from .icon import Icon
 from .api import apiEndpoints
 
 
 class Space:
     def __init__(self):
-        self._headers = {}
         self._apiEndpoints: apiEndpoints | None = None
         self.name = ""
         self.id = ""
@@ -26,6 +24,12 @@ class Space:
             obj.__dict__[key] = value
         return obj
 
+    def delete_object(self, objectId: str) -> None:
+        # BUG: not working yet
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        self._apiEndpoints.deleteObject(self.id, objectId)
+
     def get_objects(self, offset=0, limit=100) -> list[Object]:
         if self._apiEndpoints is None:
             raise Exception("You need to auth first")
@@ -40,6 +44,16 @@ class Space:
         self._all_types = results
         return results
 
+    def get_type(self, typeId: str) -> Type:
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.getType(self.id, typeId)
+        obj = Type()
+        obj._apiEndpoints = self._apiEndpoints
+        for key, value in response_data.get("object", {}).items():
+            obj.__dict__[key] = value
+        return obj
+
     def get_types(self, offset=0, limit=100) -> list[Type]:
         if self._apiEndpoints is None:
             raise Exception("You need to auth first")
@@ -48,13 +62,31 @@ class Space:
         results = []
         for data in response_data.get("data", []):
             new_item = Type()
-            new_item._headers = self._headers
+            new_item._apiEndpoints = self._apiEndpoints
             new_item.space_id = self.id
             for key, value in data.items():
                 new_item.__dict__[key] = value
             results.append(new_item)
         self._all_types = results
         return results
+
+    def get_typebyname(self, name: str) -> Type:
+        all_types = self.get_types(limit=200)
+        for type in all_types:
+            if type.name == name:
+                return type
+
+        raise ValueError("Type not found")
+
+    def get_member(self, memberId: str) -> Member:
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.getMember(self.id, memberId)
+        obj = Member()
+        obj._apiEndpoints = self._apiEndpoints
+        for key, value in response_data.get("object", {}).items():
+            obj.__dict__[key] = value
+        return obj
 
     def get_members(self, offset: int = 0, limit: int = 100) -> list[Member]:
         if self._apiEndpoints is None:
@@ -63,19 +95,11 @@ class Space:
         results = []
         for data in response_data.get("data", []):
             new_item = Member()
-            new_item._headers = self._headers
+            new_item._apiEndpoints = self._apiEndpoints
             for key, value in data.items():
                 new_item.__dict__[key] = value
             results.append(new_item)
         return results
-
-    def get_type(self, type_name: str) -> Type:
-        if len(self._all_types) == 0:
-            self._all_types = self.get_types()
-        for type in self._all_types:
-            if type.name == type_name:
-                return type
-        raise ValueError("Type not found")
 
     def search(self, query, offset=0, limit=10) -> list[Object]:
         if self._apiEndpoints is None:

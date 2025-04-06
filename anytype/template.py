@@ -1,6 +1,9 @@
+from .api import apiEndpoints
+
+
 class Template:
     def __init__(self):
-        self._headers: dict = {}
+        self._apiEndpoints: apiEndpoints | None = None
         self.type = ""
         self.id = ""
         self.name = ""

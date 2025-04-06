@@ -1,12 +1,17 @@
 import requests
-
-import requests
 from urllib.parse import urlencode
 
 API_CONFIG = {
     "apiUrl": "http://localhost:31009/v1",
     "apiAppName": "PythonClient",
 }
+
+class ResponseHasError(Exception):
+    """Custom exception for API errors."""
+    def __init__(self, response):
+        self.status_code = response.status_code
+        if self.status_code != 200:
+            raise ValueError(response.json()["error"]["message"])
 
 
 class apiEndpoints:
@@ -22,6 +27,8 @@ class apiEndpoints:
         response = requests.request(
             method, url, headers=self.headers, json=data
         )
+        ResponseHasError(response)
+
         response.raise_for_status()
         return response.json()
 
@@ -43,9 +50,9 @@ class apiEndpoints:
         return self._request(
             "GET", f"/spaces/{spaceId}/objects/{objectId}/{format}"
         )
-        # TODO:
 
     # --- lists ---
+    # NOTE: How I get these Lists, I need to get the object and filters then?
     def getListViews(self, spaceId: str, listId: str, options: dict):
         return self._request(
             "GET", f"/spaces/{spaceId}/lists/{listId}/views", params=options
@@ -80,18 +87,15 @@ class apiEndpoints:
 
     def deleteObject(self, spaceId: str, objectId: str):
         return self._request("DELETE", f"/spaces/{spaceId}/objects/{objectId}")
-        # TODO:
 
     def getObject(self, spaceId: str, objectId: str):
         return self._request("GET", f"/spaces/{spaceId}/objects/{objectId}")
-        # TODO:
 
     def getObjects(self, spaceId: str, offset=0, limit=10):
         options = {"offset": offset, "limit": limit}
         return self._request(
             "GET", f"/spaces/{spaceId}/objects", params=options
         )
-        # TODO:
 
     # --- search ---
     def globalSearch(self, query: str = "", offset=0, limit=10):
@@ -115,17 +119,14 @@ class apiEndpoints:
 
     def getSpace(self, spaceId: str):
         return self._request("GET", f"/spaces/{spaceId}")
-        # TODO:
 
     def getSpaces(self, offset=0, limit=10):
         options = {"offset": offset, "limit": limit}
         return self._request("GET", "/spaces", params=options)
-        # TODO:
 
     # --- members ---
     def getMember(self, spaceId: str, objectId: str):
         return self._request("GET", f"/spaces/{spaceId}/members/{objectId}")
-        # TODO:
 
     def getMembers(self, spaceId: str, offset: int, limit: int):
         options = {"offset": offset, "limit": limit}
@@ -133,11 +134,11 @@ class apiEndpoints:
             "GET", f"/spaces/{spaceId}/members", params=options
         )
 
-    def updateMember(self, spaceId: str, objectId: str, data: dict):
-        return self._request(
-            "PATCH", f"/spaces/{spaceId}/members/{objectId}", data=data
-        )
-        # TODO:
+    # def updateMember(self, spaceId: str, objectId: str, data: dict):
+    #     return self._request(
+    #         "PATCH", f"/spaces/{spaceId}/members/{objectId}", data=data
+    #     )
+    #     # NOTE: Not yet: https://github.com/anyproto/anytype-raycast/blob/ff6277ff34d1599e272d0fac443d3eb0b47304fa/src/components/ObjectActions.tsx#L203
 
     # --- types ---
     def getType(self, spaceId: str, typeId: str):
@@ -146,17 +147,15 @@ class apiEndpoints:
     def getTypes(self, spaceId: str, offset: int, limit: int):
         options = {"offset": offset, "limit": limit}
         return self._request("GET", f"/spaces/{spaceId}/types", params=options)
-        # TODO:
 
     # --- templates ---
     def getTemplate(self, spaceId: str, typeId: str, templateId: str):
         return self._request(
             "GET", f"/spaces/{spaceId}/types/{typeId}/templates/{templateId}"
         )
-        # TODO:
 
-    def getTemplates(self, spaceId: str, typeId: str, options: dict):
+    def getTemplates(self, spaceId: str, typeId: str, offset: int, limit: int):
+        options = {"offset": offset, "limit": limit}
         return self._request(
             "GET", f"/spaces/{spaceId}/types/{typeId}/templates", params=options
         )
-        # TODO:

@@ -1,11 +1,8 @@
 import os
-import requests
 import json
 
 from .space import Space
 from .object import Object
-from .config import END_POINTS
-from .error import ResponseHasError
 from .api import apiEndpoints
 
 
@@ -62,7 +59,7 @@ class Anytype:
         }
         self._apiEndpoints = apiEndpoints(self._headers)
         try:
-            self._apiEndpoints.getSpaces(0, 10)
+            self._apiEndpoints.getSpaces(0, 1)
             return True
         except Exception:
             return False
@@ -75,6 +72,16 @@ class Anytype:
             os.system(f"attrib +h {userdata}")
         return userdata
 
+    def get_space(self, spaceId: str) -> Space:
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.getSpace(spaceId)
+        obj = Space()
+        obj._apiEndpoints = self._apiEndpoints
+        for key, value in response_data.get("object", {}).items():
+            obj.__dict__[key] = value
+        return obj
+
     def get_spaces(self, offset=0, limit=10) -> list[Space]:
         if self._apiEndpoints is None:
             raise Exception("You need to auth first")
@@ -83,7 +90,6 @@ class Anytype:
         results = []
         for data in response.get("data", []):
             new_item = Space()
-            new_item._headers = self._headers
             new_item._apiEndpoints = self._apiEndpoints
             for key, value in data.items():
                 new_item.__dict__[key] = value
@@ -96,7 +102,7 @@ class Anytype:
             raise Exception("You need to auth first")
         data = self._apiEndpoints.createSpace(name)
         new_space = Space()
-        new_space._headers = self._headers
+        new_space._apiEndpoints = self._apiEndpoints
         for key, value in data["space"].items():
             new_space.__dict__[key] = value
         return new_space
@@ -108,9 +114,8 @@ class Anytype:
         results = []
         for data in response_data.get("data", []):
             new_item = Object()
-            new_item._headers = self._headers
+            new_item._apiEndpoints = self._apiEndpoints
             for key, value in data.items():
                 new_item.__dict__[key] = value
             results.append(new_item)
-
         return results

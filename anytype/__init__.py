@@ -1,10 +1,13 @@
 from .anytype import Anytype
 from .space import Space
+
 from .object import Object
 from .block import Block
+
+from .member import Member
 from .type import Type
 from .template import Template
 from .relation import Relation
-from .config import API_CONFIG
-from .config import END_POINTS as _END_POINTS
+from .icon import Icon
+
 from .api import apiEndpoints

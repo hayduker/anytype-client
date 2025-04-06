@@ -1,21 +1,21 @@
-import requests
 from pathlib import Path
 import platform
+import re
 
-from .config import END_POINTS
 from .block import Block
-from .error import ResponseHasError
+from .icon import Icon
+from .api import apiEndpoints
 
 
 class Object:
     def __init__(self):
-        self._headers: dict = {}
+        self._apiEndpoints: apiEndpoints | None = None
         self.space_id: str = ""
         self.id: str = ""
         self.source: str = ""
-        self.type: str = "Page"
+        self.type: dict = {}
         self.name: str = ""
-        self.icon: str = ""
+        self._icon: str | Icon = ""
         self.body: str = ""
         self.description: str = ""
         self.blocks: list[Block] = []
@@ -25,18 +25,42 @@ class Object:
         self.snippet: str = ""
         self.space_id: str = ""
 
+    @property
+    def icon(self):
+        return self._icon
+
+    @icon.setter
+    def icon(self, value):
+        emoji_pattern = re.compile(
+            "[\U0001F600-\U0001F64F"
+            "\U0001F300-\U0001F5FF"
+            "\U0001F680-\U0001F6FF"
+            "\U0001F1E0-\U0001F1FF"
+            "\U00002702-\U000027B0"
+            "\U000024C2-\U0001F251"
+            "]+",
+            flags=re.UNICODE,
+        )
+
+        if bool(emoji_pattern.fullmatch(value)):
+            icon = Icon()
+            icon.emoji = value
+            self._icon = icon
+
     def export(self, folder: str, format: str = "markdown") -> None:
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+
         path = Path(folder)
         if not path.is_absolute():
             path = Path.cwd() / path
 
         assert format in ["markdown", "protobuf"]
-        url = END_POINTS["getExport"].format(self.space_id, self.id, format)
-        payload = {"path": str(path)}
-        response = requests.get(url, headers=self._headers, json=payload)
-        ResponseHasError(response)
+        self._apiEndpoints.getExport(self.space_id, self.id, format)
         if platform.system() == "Linux":
-            print("Note that this will not work on Anytype for flatpak")
+            print(
+                "Note that this will not work on Anytype for flatpak, even without any errors"
+            )
 
     # ╭──────────────────────────────────────╮
     # │ Hope that Anytype API make some way  │
@@ -71,4 +95,4 @@ class Object:
             self.body += f"![{alt}]({image_url})\n"
 
     def __repr__(self):
-        return f"<Object(name={self.name},type_id={self.type})>"
+        return f"<Object(name={self.name},type={self.type['name']})>"
