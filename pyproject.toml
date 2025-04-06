@@ -15,7 +15,7 @@ license = {text = "GPL-3.0-or-later"}
 packages = ["anytype"]
 
 [tool.black]
-line-length = 80
+line-length = 100
 fast = true
 
 

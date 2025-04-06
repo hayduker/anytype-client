@@ -1,9 +1,11 @@
 from copy import deepcopy
 
+from .listview import ListView
 from .type import Type
 from .object import Object
 from .member import Member
 from .icon import Icon
+
 from .api import apiEndpoints
 
 
@@ -101,6 +103,28 @@ class Space:
             results.append(new_item)
         return results
 
+    def get_listviewfromobject(
+        self, obj: Object, offset: int = 0, limit: int = 100
+    ) -> list[ListView]:
+        if obj.type != "Collection":
+            raise ValueError("Object is not a collection")
+        return self.get_listviews(obj.id, offset, limit)
+
+    def get_listviews(self, listId: str, offset: int = 0, limit: int = 100) -> list[ListView]:
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.getListViews(self.id, listId, offset, limit)
+        all_listviews = []
+        for data in response_data["data"]:
+            new_item = ListView()
+            new_item.space_id = self.id
+            new_item.list_id = listId
+            new_item._apiEndpoints = self._apiEndpoints
+            for key, value in data.items():
+                new_item.__dict__[key] = value
+            all_listviews.append(new_item)
+        return all_listviews
+
     def search(self, query, offset=0, limit=10) -> list[Object]:
         if self._apiEndpoints is None:
             raise Exception("You need to auth first")
@@ -119,9 +143,18 @@ class Space:
 
         return results
 
-    def create_object(self, obj: Object, type: Type) -> Object:
+    def create_object(self, obj: Object, type: Type = Type()) -> Object:
         if self._apiEndpoints is None:
             raise Exception("You need to auth first")
+
+        if type.key == "" and obj.type_key == "":
+            raise Exception(
+                "You need to set one type for the object, use add_type method from the Object class"
+            )
+
+        type_key = obj.type_key if obj.type_key != "" else type.key
+        template_id = obj.template_id if obj.template_id != "" else type.template_id
+
         icon = {}
         if isinstance(obj.icon, Icon):
             icon = obj.icon._get_json()
@@ -134,8 +167,8 @@ class Space:
             "description": obj.description,
             "body": obj.body,
             "source": "",
-            "template_id": type.template_id,
-            "type_key": type.key,
+            "template_id": template_id,
+            "type_key": type_key,
         }
 
         obj_clone = deepcopy(obj)

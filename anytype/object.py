@@ -3,6 +3,7 @@ import platform
 import re
 
 from .block import Block
+from .type import Type
 from .icon import Icon
 from .api import apiEndpoints
 
@@ -24,6 +25,7 @@ class Object:
         self.root_id: str = ""
         self.snippet: str = ""
         self.space_id: str = ""
+        self.type_key: str = ""
 
     @property
     def icon(self):
@@ -58,9 +60,11 @@ class Object:
         assert format in ["markdown", "protobuf"]
         self._apiEndpoints.getExport(self.space_id, self.id, format)
         if platform.system() == "Linux":
-            print(
-                "Note that this will not work on Anytype for flatpak, even without any errors"
-            )
+            print("Note that this will not work on Anytype for flatpak, even without any errors")
+
+    def add_type(self, type: Type):
+        self.template_id = type.template_id
+        self.type_key = type.key
 
     # ╭──────────────────────────────────────╮
     # │ Hope that Anytype API make some way  │

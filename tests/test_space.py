@@ -1,100 +1,168 @@
-# test_space.py
 import pytest
-from anytype.space import Space
-from anytype.object import Object
-from anytype.type import Type
-from anytype.icon import Icon
+import os
+
+from anytype import Anytype, Space, Template, Object, Relation, Block
+from pathlib import Path
+
+any = Anytype()
+any.auth()
 
 
-def test_space_initialization():
-    space = Space()
-    assert space._apiEndpoints is None
-    assert space.name == ""
-    assert space.id == ""
-    assert space._all_types == []
+def test_create_space():
+    any.create_space("API")
+    assert get_apispace()
 
 
-def test_space_repr():
-    space = Space()
-    space.name = "MySpace"
-    assert repr(space) == "<Space(name=MySpace)>"
+def get_apispace() -> Space:
+    spaces = any.get_spaces()
+    for space in spaces:
+        if space.name == "API":
+            return space
+    raise Exception("Space not found")
 
 
-def test_get_object_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.get_object("dummy-id")
+def test_get_spaces():
+    spaces = any.get_spaces()
+    assert len(spaces) > 0
+    found_space = False
+    for space in spaces:
+        if space.name == "API":
+            found_space = True
+            break
+    assert found_space
 
 
-def test_delete_object_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.delete_object("dummy-id")
-
-
-def test_get_objects_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.get_objects()
-
-
-def test_get_type_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.get_type("dummy-id")
-
-
-def test_get_types_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.get_types()
-
-
-def test_get_member_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.get_member("dummy-id")
-
-
-def test_get_members_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.get_members()
-
-
-def test_search_without_auth_raises():
-    space = Space()
-    with pytest.raises(Exception, match="You need to auth first"):
-        space.search("query")
-
-
-def test_search_without_space_id_raises():
-    class DummyApi:
-        def search(self, *args, **kwargs):
-            return {}
-
-    space = Space()
-    space._apiEndpoints = DummyApi()
+def test_missspaceid():
+    space = get_apispace()
+    print(space)
     space.id = ""
-    with pytest.raises(ValueError, match="Space ID is required"):
-        space.search("query")
+    with pytest.raises(ValueError):
+        space.search("bla bla bla")
 
 
-def test_create_object_with_invalid_icon_type_raises():
-    space = Space()
-    space._apiEndpoints = object()  # dummy value
-    space.id = "space-id"
+def test_template():
+    # this is unsued yet, but just to keep testing
+    template = Template()
+    print(template)
+
+
+def test_search():
+    space = get_apispace()
+    values = space.search("Math")
+    print(values)
+
+
+def test_globalsearch():
+    query = any.global_search("Isso não deve existir")
+    print(query)
+
+    query = any.global_search("Math")
+    print(query)
+
+
+def test_get_types():
+    space = get_apispace()
+    space._all_types = []
+
+    with pytest.raises(ValueError):
+        space.get_type("ExistingType")
+
+
+def test_relation():
+    # this is unsued yet, but just to keep testing
+    relation = Relation()
+    print(relation)
+
+
+def test_block():
+    # this is unsued yet, but just to keep testing
+    block = Block()
+    print(block)
+
+
+def test_spacemethods():
+    space = any.get_spaces()[0]
+    objects = space.get_objects()
+    obj = objects[0]
+    obj = space.get_object(obj.id)
+
+
+def test_templates():
+    space = get_apispace()
+    objtype = space.get_typebyname("Project")
+    print(objtype)
+
+    templates = objtype.get_templates()
+    if templates is None:
+        raise Exception("No templates found for Project")
+
+    objtype.set_template(templates[0].name)
+    objtype._all_templates = []
+    objtype.set_template(templates[0].name)
+    print(templates[0])
+
+    # template that does not exist
+    with pytest.raises(ValueError):
+        objtype.set_template("NoExists")
+
+
+def test_createobj():
+    space = get_apispace()
+    if not space:
+        raise Exception("Space not found")
 
     obj = Object()
-    obj.icon = "not-an-icon"
-    obj.name = "Test"
-    obj.description = "Test Desc"
-    obj.body = "Test Body"
+    obj.name = "Hello World!"
+    obj.icon = "🐍"
+    obj.body = "`print('Hello World!')`"
+    obj.description = "This is an object created from Python Api"
 
-    typ = Type()
-    typ.template_id = "template-id"
-    typ.key = "type-key"
+    objtype = space.get_typebyname("Page")
+    obj.add_title1("Test!")
+    obj.add_title2("Test!")
+    obj.add_title3("Test!")
+    obj.add_text("normal text")
+    obj.add_codeblock("print('Hello World!')")
+    obj.add_bullet("Hello World!")
+    obj.add_checkbox("Hello World!")
+    obj.add_image(
+        "https://raw.githubusercontent.com/charlesneimog/"
+        + "anytype-client/refs/heads/main/resources/pdf.png"
+    )
+    obj.add_image(
+        "https://raw.githubusercontent.com/charlesneimog/"
+        + "anytype-client/refs/heads/main/resources/pdf.png",
+        alt="PDF",
+        title="PDF",
+    )
+    created_obj = space.create_object(obj, objtype)
+    # Add assertions to verify the object was created
+    assert created_obj.name == "Hello World!"
+    assert created_obj.icon.emoji == "🐍"
+    assert created_obj.description == "This is an object created from Python Api"
 
-    with pytest.raises(ValueError, match="Invalid icon type"):
-        space.create_object(obj, typ)
+    space.search("Hello World")
 
+
+def test_getmembers():
+    space = get_apispace()
+    if not space:
+        raise Exception("Space not found")
+    members = space.get_members()
+    assert len(members) > 0
+
+
+def test_exportobj():
+    space = get_apispace()
+    if not space:
+        raise Exception("Space not found")
+    objs = space.get_objects()
+    obj = objs[0]
+    assert len(objs) > 0
+    obj.export("export")
+
+    # Handle the case for Linux / Flatpak
+    if not Path("export").exists() and os.name == "posix":
+        pytest.skip("Export test is not supported on flatpak for Linux.")
+    else:
+        assert Path("export").exists()

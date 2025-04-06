@@ -16,15 +16,11 @@ class Type:
         if name != "":
             self.set_template(name)
 
-    def get_templates(
-        self, offset: int = 0, limit: int = 100
-    ) -> list[Template]:
+    def get_templates(self, offset: int = 0, limit: int = 100) -> list[Template]:
         if self._apiEndpoints is None:
             raise Exception("You need to auth first")
 
-        response_data = self._apiEndpoints.getTemplates(
-            self.space_id, self.id, offset, limit
-        )
+        response_data = self._apiEndpoints.getTemplates(self.space_id, self.id, offset, limit)
         self._all_templates = []
         for data in response_data.get("data", []):
             new_template = Template()
@@ -46,16 +42,13 @@ class Type:
                 return
         if not found:
             raise ValueError(
-                f"Type '{self.name}' does not have "
-                "a template named '{template_name}'"
+                f"Type '{self.name}' does not have " "a template named '{template_name}'"
             )
 
     def get_template(self, id: str) -> Template:
         if self._apiEndpoints is None:
             raise Exception("You need to auth first")
-        response_data = self._apiEndpoints.getTemplate(
-            self.space_id, self.id, id
-        )
+        response_data = self._apiEndpoints.getTemplate(self.space_id, self.id, id)
         results = []
         new_item = Template()
         new_item._apiEndpoints = self._apiEndpoints

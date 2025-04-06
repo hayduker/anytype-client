@@ -28,9 +28,7 @@ class apiEndpoints:
         url = f"{self.api_url}{path}"
         if params:
             url += "?" + urlencode(params)
-        response = requests.request(
-            method, url, headers=self.headers, json=data
-        )
+        response = requests.request(method, url, headers=self.headers, json=data)
 
         version_str = response.headers.get("Anytype-Version")
         if version_str:
@@ -39,18 +37,14 @@ class apiEndpoints:
             if version_date < MIN_REQUIRED_VERSION:
                 print("❌ Version is too old:", version_date)
         else:
-            raise ValueError(
-                "Anytype-Version header not found, probably anytype is too old"
-            )
+            raise ValueError("Anytype-Version header not found, probably anytype is too old")
 
         ResponseHasError(response)
         return response.json()
 
     # --- auth ---
     def displayCode(self):
-        return self._request(
-            "POST", "/auth/display_code", params={"app_name": self.app_name}
-        )
+        return self._request("POST", "/auth/display_code", params={"app_name": self.app_name})
 
     def getToken(self, challengeId: str, code: str):
         return self._request(
@@ -61,39 +55,26 @@ class apiEndpoints:
 
     # --- export ---
     def getExport(self, spaceId: str, objectId: str, format: str):
-        return self._request(
-            "GET", f"/spaces/{spaceId}/objects/{objectId}/{format}"
-        )
+        return self._request("GET", f"/spaces/{spaceId}/objects/{objectId}/{format}")
 
     # --- lists ---
-    # NOTE: How I get these Lists, I need to get the object and filters then?
-    def getListViews(self, spaceId: str, listId: str, options: dict):
-        return self._request(
-            "GET", f"/spaces/{spaceId}/lists/{listId}/views", params=options
-        )
-        # TODO:
+    def getListViews(self, spaceId: str, listId: str, offset: int, limit: int):
+        options = {"offset": offset, "limit": limit}
+        return self._request("GET", f"/spaces/{spaceId}/lists/{listId}/views", params=options)
 
-    def getObjectsInList(
-        self, spaceId: str, listId: str, viewId: str, options: dict
-    ):
+    def getObjectsInList(self, spaceId: str, listId: str, viewId: str, offset: int, limit: int):
+        options = {"offset": offset, "limit": limit}
         return self._request(
             "GET",
             f"/spaces/{spaceId}/lists/{listId}/{viewId}/objects",
             params=options,
         )
-        # TODO:
 
-    def addObjectsToList(self, spaceId: str, listId: str, data: dict):
-        return self._request(
-            "POST", f"/spaces/{spaceId}/lists/{listId}/objects", data=data
-        )
-        # TODO:
+    def addObjectsToList(self, spaceId: str, listId: str, object_ids: list[str]):
+        return self._request("POST", f"/spaces/{spaceId}/lists/{listId}/objects", data=object_ids)
 
-    def removeObjectsFromList(self, spaceId: str, listId: str, objectId: str):
-        return self._request(
-            "DELETE", f"/spaces/{spaceId}/lists/{listId}/objects/{objectId}"
-        )
-        # TODO:
+    def deleteObjectsFromList(self, spaceId: str, listId: str, objectId: str):
+        return self._request("DELETE", f"/spaces/{spaceId}/lists/{listId}/objects/{objectId}")
 
     # --- objects ---
     def createObject(self, spaceId: str, data: dict):
@@ -107,9 +88,7 @@ class apiEndpoints:
 
     def getObjects(self, spaceId: str, offset=0, limit=10):
         options = {"offset": offset, "limit": limit}
-        return self._request(
-            "GET", f"/spaces/{spaceId}/objects", params=options
-        )
+        return self._request("GET", f"/spaces/{spaceId}/objects", params=options)
 
     # --- search ---
     def globalSearch(self, query: str = "", offset=0, limit=10):
@@ -117,14 +96,10 @@ class apiEndpoints:
         payload = {"query": query}
         return self._request("POST", "/search", params=options, data=payload)
 
-    def search(
-        self, spaceId: str, query: str, offset: int = 0, limit: int = 10
-    ):
+    def search(self, spaceId: str, query: str, offset: int = 0, limit: int = 10):
         options = {"offset": offset, "limit": limit}
         payload = {"query": query}
-        return self._request(
-            "POST", f"/spaces/{spaceId}/search", params=options, data=payload
-        )
+        return self._request("POST", f"/spaces/{spaceId}/search", params=options, data=payload)
 
     # --- spaces ---
     def createSpace(self, name):
@@ -144,9 +119,7 @@ class apiEndpoints:
 
     def getMembers(self, spaceId: str, offset: int, limit: int):
         options = {"offset": offset, "limit": limit}
-        return self._request(
-            "GET", f"/spaces/{spaceId}/members", params=options
-        )
+        return self._request("GET", f"/spaces/{spaceId}/members", params=options)
 
     # def updateMember(self, spaceId: str, objectId: str, data: dict):
     #     return self._request(
@@ -164,12 +137,8 @@ class apiEndpoints:
 
     # --- templates ---
     def getTemplate(self, spaceId: str, typeId: str, templateId: str):
-        return self._request(
-            "GET", f"/spaces/{spaceId}/types/{typeId}/templates/{templateId}"
-        )
+        return self._request("GET", f"/spaces/{spaceId}/types/{typeId}/templates/{templateId}")
 
     def getTemplates(self, spaceId: str, typeId: str, offset: int, limit: int):
         options = {"offset": offset, "limit": limit}
-        return self._request(
-            "GET", f"/spaces/{spaceId}/types/{typeId}/templates", params=options
-        )
+        return self._request("GET", f"/spaces/{spaceId}/types/{typeId}/templates", params=options)
