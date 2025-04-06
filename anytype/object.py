@@ -33,7 +33,7 @@ class Object:
         assert format in ["markdown", "protobuf"]
         url = END_POINTS["getExport"].format(self.space_id, self.id, format)
         payload = {"path": str(path)}
-        response = requests.post(url, headers=self._headers, json=payload)
+        response = requests.get(url, headers=self._headers, json=payload)
         ResponseHasError(response)
         if platform.system() == "Linux":
             print("Note that this will not work on Anytype for flatpak")

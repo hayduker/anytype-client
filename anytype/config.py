@@ -12,7 +12,7 @@ END_POINTS = {
         API_CONFIG["apiUrl"], "{}", "{}"
     ),
     "displayCode": "{}/auth/display_code".format(API_CONFIG["apiUrl"]),
-    "getExport": "{}/spaces/{}/objects/{}/export/{}".format(
+    "getExport": "{}/spaces/{}/objects/{}/{}".format(
         API_CONFIG["apiUrl"], "{}", "{}", "{}"
     ),
     "getMembers": "{}/spaces/{}/members".format(
