@@ -6,6 +6,7 @@ from .space import Space
 from .object import Object
 from .config import END_POINTS
 from .error import ResponseHasError
+from .api import apiEndpoints
 
 
 class Anytype:
@@ -14,6 +15,7 @@ class Anytype:
         self.space_id = ""
         self.token = ""
         self.app_key = ""
+        self._apiEndpoints: apiEndpoints | None = None
         self._headers = {}
 
     def auth(self, force=False) -> None:
@@ -27,41 +29,43 @@ class Anytype:
             self.app_name = "python-anytype-client"
 
         if os.path.exists(anytoken):
-            auth_json = json.load(open(anytoken))
+            with open(anytoken) as f:
+                auth_json = json.load(f)
             self.token = auth_json.get("session_token")
             self.app_key = auth_json.get("app_key")
             if self._validate_token():
                 return
 
-        url = END_POINTS["displayCode"]
-        payload = {"app_name": self.app_name}
-        response = requests.post(url, params=payload)
-        ResponseHasError(response)
+        # Inicializa o client de API com o nome do app
+        self._apiEndpoints = apiEndpoints()
+        display_code_response = self._apiEndpoints.displayCode()
+        challenge_id = display_code_response.get("challenge_id")
 
         api_four_digit_code = input("Enter the 4 digit code: ")
-        challenge_id = response.json().get("challenge_id")
-        url = END_POINTS["auth"]
-        payload = {"challenge_id": challenge_id, "code": api_four_digit_code}
-        response = requests.post(url, params=payload)
-        ResponseHasError(response)
 
+        token_response = self._apiEndpoints.getToken(
+            challenge_id, api_four_digit_code
+        )
+
+        # Salva o token localmente
         with open(anytoken, "w") as file:
-            json.dump(response.json(), file, indent=4)
-        self.token = response.json().get("session_token")
-        self.app_key = response.json().get("app_key")
+            json.dump(token_response, file, indent=4)
+
+        self.token = token_response.get("session_token")
+        self.app_key = token_response.get("app_key")
         self._validate_token()
 
     def _validate_token(self) -> bool:
-        url = END_POINTS["getSpaces"]
         self._headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.app_key}",
         }
-        response = requests.get(url, headers=self._headers)
-        if response.status_code != 200:
-            return False
-        else:
+        self._apiEndpoints = apiEndpoints(self._headers)
+        try:
+            self._apiEndpoints.getSpaces(0, 10)
             return True
+        except Exception:
+            return False
 
     def _get_userdata_folder(self) -> str:
         userdata = os.path.join(os.path.expanduser("~"), ".anytype")
@@ -72,14 +76,15 @@ class Anytype:
         return userdata
 
     def get_spaces(self, offset=0, limit=10) -> list[Space]:
-        url = END_POINTS["getSpaces"]
-        params = {"offset": offset, "limit": limit}
-        response = requests.get(url, headers=self._headers, params=params)
-        ResponseHasError(response)
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+
+        response = self._apiEndpoints.getSpaces(offset, limit)
         results = []
-        for data in response.json().get("data", []):
+        for data in response.get("data", []):
             new_item = Space()
             new_item._headers = self._headers
+            new_item._apiEndpoints = self._apiEndpoints
             for key, value in data.items():
                 new_item.__dict__[key] = value
             results.append(new_item)
@@ -87,34 +92,20 @@ class Anytype:
         return results
 
     def create_space(self, name: str) -> Space:
-        url = END_POINTS["createSpace"]
-        object_data = {
-            "name": name,
-        }
-        response = requests.post(url, headers=self._headers, json=object_data)
-        ResponseHasError(response)
-        data = response.json()
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        data = self._apiEndpoints.createSpace(name)
         new_space = Space()
         new_space._headers = self._headers
         for key, value in data["space"].items():
             new_space.__dict__[key] = value
-
         return new_space
 
     def global_search(self, query, offset=0, limit=10) -> list[Object]:
-        url = END_POINTS["globalSearch"]
-        options = {"offset": offset, "limit": limit}
-        search_request = {
-            "query": query,
-        }
-        response = requests.post(
-            url, json=search_request, headers=self._headers, params=options
-        )
-        ResponseHasError(response)
-
-        response_data = response.json()
+        if self._apiEndpoints is None:
+            raise Exception("You need to auth first")
+        response_data = self._apiEndpoints.globalSearch(query, offset, limit)
         results = []
-
         for data in response_data.get("data", []):
             new_item = Object()
             new_item._headers = self._headers
