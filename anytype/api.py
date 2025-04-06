@@ -1,13 +1,17 @@
 import requests
 from urllib.parse import urlencode
+from datetime import datetime
 
+MIN_REQUIRED_VERSION = datetime(2025, 3, 17).date()
 API_CONFIG = {
     "apiUrl": "http://localhost:31009/v1",
     "apiAppName": "PythonClient",
 }
 
+
 class ResponseHasError(Exception):
     """Custom exception for API errors."""
+
     def __init__(self, response):
         self.status_code = response.status_code
         if self.status_code != 200:
@@ -27,9 +31,19 @@ class apiEndpoints:
         response = requests.request(
             method, url, headers=self.headers, json=data
         )
-        ResponseHasError(response)
 
-        response.raise_for_status()
+        version_str = response.headers.get("Anytype-Version")
+        if version_str:
+            version_date = datetime.strptime(version_str, "%Y-%m-%d").date()
+
+            if version_date < MIN_REQUIRED_VERSION:
+                print("❌ Version is too old:", version_date)
+        else:
+            raise ValueError(
+                "Anytype-Version header not found, probably anytype is too old"
+            )
+
+        ResponseHasError(response)
         return response.json()
 
     # --- auth ---
