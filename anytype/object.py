@@ -11,7 +11,6 @@ from .api import apiEndpoints
 class Object:
     def __init__(self):
         self._apiEndpoints: apiEndpoints | None = None
-        self.space_id: str = ""
         self.id: str = ""
         self.source: str = ""
         self.type: dict = {}
@@ -22,9 +21,12 @@ class Object:
         self.blocks: list[Block] = []
         self.details = []
         self.layout: str = "basic"
+
         self.root_id: str = ""
-        self.snippet: str = ""
         self.space_id: str = ""
+        self.template_id: str = ""
+
+        self.snippet: str = ""
         self.type_key: str = ""
 
     @property
