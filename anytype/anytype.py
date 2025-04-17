@@ -15,7 +15,7 @@ class Anytype:
         self._apiEndpoints: apiEndpoints | None = None
         self._headers = {}
 
-    def auth(self, force=False) -> None:
+    def auth(self, force=False, callback=None) -> None:
         userdata = self._get_userdata_folder()
         anytoken = os.path.join(userdata, "any_token.json")
 
@@ -38,11 +38,12 @@ class Anytype:
         display_code_response = self._apiEndpoints.displayCode()
         challenge_id = display_code_response.get("challenge_id")
 
-        api_four_digit_code = input("Enter the 4 digit code: ")
+        if callback is None:
+            api_four_digit_code = input("Enter the 4 digit code: ")
+        else:
+            api_four_digit_code = callback()
 
-        token_response = self._apiEndpoints.getToken(
-            challenge_id, api_four_digit_code
-        )
+        token_response = self._apiEndpoints.getToken(challenge_id, api_four_digit_code)
 
         # Salva o token localmente
         with open(anytoken, "w") as file:

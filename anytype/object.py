@@ -21,6 +21,7 @@ class Object:
         self.blocks: list[Block] = []
         self.details = []
         self.layout: str = "basic"
+        self.properties: list = []
 
         self.root_id: str = ""
         self.space_id: str = ""
