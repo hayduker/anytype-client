@@ -6,6 +6,7 @@ from .block import Block
 from .type import Type
 from .icon import Icon
 from .api import apiEndpoints
+from .utils import requires_auth
 
 
 class Object:
@@ -52,10 +53,8 @@ class Object:
             icon.emoji = value
             self._icon = icon
 
+    @requires_auth
     def export(self, folder: str, format: str = "markdown") -> None:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
-
         path = Path(folder)
         if not path.is_absolute():
             path = Path.cwd() / path

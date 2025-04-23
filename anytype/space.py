@@ -5,8 +5,8 @@ from .type import Type
 from .object import Object
 from .member import Member
 from .icon import Icon
-
 from .api import apiEndpoints
+from .utils import requires_auth
 
 
 class Space:
@@ -16,9 +16,8 @@ class Space:
         self.id = ""
         self._all_types = []
 
+    @requires_auth
     def get_object(self, objectId: str) -> Object:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getObject(self.id, objectId)
         obj = Object()
         obj._apiEndpoints = self._apiEndpoints
@@ -26,15 +25,13 @@ class Space:
             obj.__dict__[key] = value
         return obj
 
+    @requires_auth
     def delete_object(self, objectId: str) -> None:
         # BUG: not working yet
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         self._apiEndpoints.deleteObject(self.id, objectId)
 
+    @requires_auth
     def get_objects(self, offset=0, limit=100) -> list[Object]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getObjects(self.id, offset, limit)
         results = []
         for data in response_data.get("data", []):
@@ -46,9 +43,8 @@ class Space:
         self._all_types = results
         return results
 
+    @requires_auth
     def get_type(self, typeId: str) -> Type:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getType(self.id, typeId)
         obj = Type()
         obj._apiEndpoints = self._apiEndpoints
@@ -56,10 +52,8 @@ class Space:
             obj.__dict__[key] = value
         return obj
 
+    @requires_auth
     def get_types(self, offset=0, limit=100) -> list[Type]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
-
         response_data = self._apiEndpoints.getTypes(self.id, offset, limit)
         results = []
         for data in response_data.get("data", []):
@@ -80,9 +74,8 @@ class Space:
 
         raise ValueError("Type not found")
 
+    @requires_auth
     def get_member(self, memberId: str) -> Member:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getMember(self.id, memberId)
         obj = Member()
         obj._apiEndpoints = self._apiEndpoints
@@ -90,9 +83,8 @@ class Space:
             obj.__dict__[key] = value
         return obj
 
+    @requires_auth
     def get_members(self, offset: int = 0, limit: int = 100) -> list[Member]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getMembers(self.id, offset, limit)
         results = []
         for data in response_data.get("data", []):
@@ -110,9 +102,8 @@ class Space:
             raise ValueError("Object is not a collection")
         return self.get_listviews(obj.id, offset, limit)
 
+    @requires_auth
     def get_listviews(self, listId: str, offset: int = 0, limit: int = 100) -> list[ListView]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getListViews(self.id, listId, offset, limit)
         all_listviews = []
         for data in response_data["data"]:
@@ -125,10 +116,8 @@ class Space:
             all_listviews.append(new_item)
         return all_listviews
 
+    @requires_auth
     def search(self, query, offset=0, limit=10) -> list[Object]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
-
         if self.id == "":
             raise ValueError("Space ID is required")
 
@@ -143,10 +132,8 @@ class Space:
 
         return results
 
+    @requires_auth
     def create_object(self, obj: Object, type: Type = Type()) -> Object:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
-
         if type.key == "" and obj.type_key == "":
             raise Exception(
                 "You need to set one type for the object, use add_type method from the Object class"
