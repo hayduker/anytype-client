@@ -7,6 +7,9 @@ authors = [
   {name = "Charles K. Neimog", email = "charlesneimog@outlook.com"},
 ]
 license = {text = "GPL-3.0-or-later"}
+dependencies = [
+    "requests"
+]
 
 [project.urls]
 "Source Code" = "https://github.com/charlesneimog/anytype-client" 
