@@ -77,11 +77,11 @@ class Anytype:
     @requires_auth
     def get_space(self, spaceId: str) -> Space:
         response_data = self._apiEndpoints.getSpace(spaceId)
-        obj = Space()
-        obj._apiEndpoints = self._apiEndpoints
-        for key, value in response_data.get("object", {}).items():
-            obj.__dict__[key] = value
-        return obj
+        space = Space()
+        space._apiEndpoints = self._apiEndpoints
+        for key, value in response_data.get("space", {}).items():
+            space.__dict__[key] = value
+        return space
 
     @requires_auth
     def get_spaces(self, offset=0, limit=10) -> list[Space]:
