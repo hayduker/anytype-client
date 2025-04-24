@@ -4,6 +4,7 @@ import json
 from .space import Space
 from .object import Object
 from .api import apiEndpoints
+from .utils import requires_auth
 
 
 class Anytype:
@@ -73,9 +74,8 @@ class Anytype:
             os.system(f"attrib +h {userdata}")
         return userdata
 
+    @requires_auth
     def get_space(self, spaceId: str) -> Space:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getSpace(spaceId)
         obj = Space()
         obj._apiEndpoints = self._apiEndpoints
@@ -83,10 +83,8 @@ class Anytype:
             obj.__dict__[key] = value
         return obj
 
+    @requires_auth
     def get_spaces(self, offset=0, limit=10) -> list[Space]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
-
         response = self._apiEndpoints.getSpaces(offset, limit)
         results = []
         for data in response.get("data", []):
@@ -98,9 +96,8 @@ class Anytype:
 
         return results
 
+    @requires_auth
     def create_space(self, name: str) -> Space:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         data = self._apiEndpoints.createSpace(name)
         new_space = Space()
         new_space._apiEndpoints = self._apiEndpoints
@@ -108,9 +105,8 @@ class Anytype:
             new_space.__dict__[key] = value
         return new_space
 
+    @requires_auth
     def global_search(self, query, offset=0, limit=10) -> list[Object]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.globalSearch(query, offset, limit)
         results = []
         for data in response_data.get("data", []):

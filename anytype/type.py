@@ -1,5 +1,6 @@
 from .template import Template
 from .api import apiEndpoints
+from .utils import requires_auth
 
 
 class Type:
@@ -16,10 +17,8 @@ class Type:
         if name != "":
             self.set_template(name)
 
+    @requires_auth
     def get_templates(self, offset: int = 0, limit: int = 100) -> list[Template]:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
-
         response_data = self._apiEndpoints.getTemplates(self.space_id, self.id, offset, limit)
         self._all_templates = []
         for data in response_data.get("data", []):
@@ -45,9 +44,8 @@ class Type:
                 f"Type '{self.name}' does not have " "a template named '{template_name}'"
             )
 
+    @requires_auth
     def get_template(self, id: str) -> Template:
-        if self._apiEndpoints is None:
-            raise Exception("You need to auth first")
         response_data = self._apiEndpoints.getTemplate(self.space_id, self.id, id)
         results = []
         new_item = Template()
