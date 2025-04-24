@@ -5,11 +5,13 @@ from .type import Type
 from .object import Object
 from .member import Member
 from .icon import Icon
-from .api import apiEndpoints
+from .api import apiEndpoints, APIWrapper
 from .utils import requires_auth
 
+from rich import print_json
+import json
 
-class Space:
+class Space(APIWrapper):
     def __init__(self):
         self._apiEndpoints: apiEndpoints | None = None
         self.name = ""
@@ -18,12 +20,9 @@ class Space:
 
     @requires_auth
     def get_object(self, objectId: str) -> Object:
-        response_data = self._apiEndpoints.getObject(self.id, objectId)
-        obj = Object()
-        obj._apiEndpoints = self._apiEndpoints
-        for key, value in response_data.get("object", {}).items():
-            obj.__dict__[key] = value
-        return obj
+        response = self._apiEndpoints.getObject(self.id, objectId)
+        data = response.get("object", {})
+        return Object._from_api(self._apiEndpoints, data)
 
     @requires_auth
     def delete_object(self, objectId: str) -> None:
@@ -33,38 +32,33 @@ class Space:
     @requires_auth
     def get_objects(self, offset=0, limit=100) -> list[Object]:
         response_data = self._apiEndpoints.getObjects(self.id, offset, limit)
-        results = []
-        for data in response_data.get("data", []):
-            new_item = Object()
-            new_item._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-        self._all_types = results
-        return results
+        objects = [
+            Object._from_api(self._apiEndpoints, data)
+            for data in response_data.get("data", [])
+        ]
+
+        self._all_types = objects # TODO: is this supposed to be here?
+        return objects
 
     @requires_auth
     def get_type(self, typeId: str) -> Type:
-        response_data = self._apiEndpoints.getType(self.id, typeId)
-        obj = Type()
-        obj._apiEndpoints = self._apiEndpoints
-        for key, value in response_data.get("object", {}).items():
-            obj.__dict__[key] = value
-        return obj
+        response = self._apiEndpoints.getType(self.id, typeId)
+        data = response.get("type", {})
+        # TODO: Sometimes we need to add more attributes beyond the ones in the 
+        # API response. There might be a cleaner way to do this, but doing
+        # a dict merge with | works for now.
+        return Type._from_api(self._apiEndpoints, data | {"space_id": self.id})
 
     @requires_auth
     def get_types(self, offset=0, limit=100) -> list[Type]:
-        response_data = self._apiEndpoints.getTypes(self.id, offset, limit)
-        results = []
-        for data in response_data.get("data", []):
-            new_item = Type()
-            new_item._apiEndpoints = self._apiEndpoints
-            new_item.space_id = self.id
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-        self._all_types = results
-        return results
+        response = self._apiEndpoints.getTypes(self.id, offset, limit)
+        types = [
+            Type._from_api(self._apiEndpoints, data | {"space_id": self.id})
+            for data in response.get("data", [])
+        ]
+
+        self._all_types = types
+        return types
 
     def get_typebyname(self, name: str) -> Type:
         all_types = self.get_types(limit=200)
@@ -76,24 +70,17 @@ class Space:
 
     @requires_auth
     def get_member(self, memberId: str) -> Member:
-        response_data = self._apiEndpoints.getMember(self.id, memberId)
-        obj = Member()
-        obj._apiEndpoints = self._apiEndpoints
-        for key, value in response_data.get("object", {}).items():
-            obj.__dict__[key] = value
-        return obj
+        response = self._apiEndpoints.getMember(self.id, memberId)
+        data = response.get("object", {})
+        return Member._from_api(self._apiEndpoints, data)
 
     @requires_auth
     def get_members(self, offset: int = 0, limit: int = 100) -> list[Member]:
-        response_data = self._apiEndpoints.getMembers(self.id, offset, limit)
-        results = []
-        for data in response_data.get("data", []):
-            new_item = Member()
-            new_item._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-        return results
+        response = self._apiEndpoints.getMembers(self.id, offset, limit)
+        return [
+            Member._from_api(self._apiEndpoints, data)
+            for data in response.get("data", [])
+        ]
 
     def get_listviewfromobject(
         self, obj: Object, offset: int = 0, limit: int = 100
@@ -104,33 +91,25 @@ class Space:
 
     @requires_auth
     def get_listviews(self, listId: str, offset: int = 0, limit: int = 100) -> list[ListView]:
-        response_data = self._apiEndpoints.getListViews(self.id, listId, offset, limit)
-        all_listviews = []
-        for data in response_data["data"]:
-            new_item = ListView()
-            new_item.space_id = self.id
-            new_item.list_id = listId
-            new_item._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            all_listviews.append(new_item)
-        return all_listviews
-
+        response = self._apiEndpoints.getListViews(self.id, listId, offset, limit)
+        return [
+            ListView._from_api(self._apiEndpoints, data | {
+                "space_id": self.id,
+                "list_id": listId,
+            })
+            for data in response.get("data", [])
+        ]
+        
     @requires_auth
     def search(self, query, offset=0, limit=10) -> list[Object]:
         if self.id == "":
             raise ValueError("Space ID is required")
 
         response = self._apiEndpoints.search(self.id, query, offset, limit)
-        results = []
-        for data in response.get("data", []):
-            new_item = Object()
-            new_item._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-
-        return results
+        return [
+            Object._from_api(self._apiEndpoints, data)
+            for data in response.get("data", [])
+        ]
 
     @requires_auth
     def create_object(self, obj: Object, type: Type = Type()) -> Object:
@@ -159,7 +138,6 @@ class Space:
         }
 
         obj_clone = deepcopy(obj)
-        obj_clone._apiEndpoints = self._apiEndpoints
         obj_clone._apiEndpoints = self._apiEndpoints
         obj_clone.space_id = self.id
 

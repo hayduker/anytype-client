@@ -1,4 +1,4 @@
-from .api import apiEndpoints
+from .api import apiEndpoints, APIWrapper
 from .object import Object
 from .utils import requires_auth
 
@@ -13,18 +13,14 @@ class ListView:
 
     @requires_auth
     def get_objectsinlistview(self, offset=0, limit=100):
-        response_data = self._apiEndpoints.getObjectsInList(
+        response = self._apiEndpoints.getObjectsInList(
             self.space_id, self.list_id, self.id, offset, limit
         )
 
-        results = []
-        for data in response_data.get("data", []):
-            new_item = Object()
-            new_item._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-        return results
+        return [
+            Object._from_api(self._apiEndpoints, data)
+            for data in response.get("data", [])
+        ]
 
     @requires_auth
     def add_objectsinlistview(self, objs: list[Object]) -> None:

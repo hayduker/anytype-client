@@ -1,7 +1,7 @@
-from .api import apiEndpoints
+from .api import apiEndpoints, APIWrapper
 
 
-class Member:
+class Member(APIWrapper):
     def __init__(self):
         self._apiEndpoints: apiEndpoints | None = None
         self.type = ""

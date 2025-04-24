@@ -1,9 +1,11 @@
 from .template import Template
-from .api import apiEndpoints
+from .api import apiEndpoints, APIWrapper
 from .utils import requires_auth
 
+from rich import print_json
+import json
 
-class Type:
+class Type(APIWrapper):
     def __init__(self, name: str = ""):
         self._apiEndpoints: apiEndpoints | None = None
         self._all_templates = []
@@ -19,14 +21,12 @@ class Type:
 
     @requires_auth
     def get_templates(self, offset: int = 0, limit: int = 100) -> list[Template]:
-        response_data = self._apiEndpoints.getTemplates(self.space_id, self.id, offset, limit)
-        self._all_templates = []
-        for data in response_data.get("data", []):
-            new_template = Template()
-            new_template._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_template.__dict__[key] = value
-            self._all_templates.append(new_template)
+        response = self._apiEndpoints.getTemplates(self.space_id, self.id, offset, limit)
+        self._all_templates = [
+            Template._from_api(self._apiEndpoints, data)
+            for data in response.get("data", [])
+        ]
+
         return self._all_templates
 
     def set_template(self, template_name: str) -> None:
@@ -43,18 +43,28 @@ class Type:
             raise ValueError(
                 f"Type '{self.name}' does not have " "a template named '{template_name}'"
             )
+    
+    @requires_auth
+    def get_template(self, id: str) -> Template:
+        response = self._apiEndpoints.getTemplate(self.space_id, self.id, id)
+
+        datas = response.get("data", [])
+        if len(datas) > 1:
+            print(f'getTemplate response data has more than one entry: {response}')
+
+        return Template._from_api(self._apiEndpoints, datas[0])
 
     @requires_auth
     def get_template(self, id: str) -> Template:
         response_data = self._apiEndpoints.getTemplate(self.space_id, self.id, id)
-        results = []
-        new_item = Template()
-        new_item._apiEndpoints = self._apiEndpoints
+
+        template = Template()
+        template._apiEndpoints = self._apiEndpoints
         for data in response_data.get("data", []):
             for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-        return new_item
+                template.__dict__[key] = value
+
+        return template
 
     def __repr__(self):
         if "emoji" in self.icon:

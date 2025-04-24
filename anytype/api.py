@@ -1,6 +1,11 @@
 import requests
 from urllib.parse import urlencode
 from datetime import datetime
+from typing import TypeVar, Type
+
+from rich import print_json
+import json
+
 
 MIN_REQUIRED_VERSION = datetime(2025, 3, 17).date()
 API_CONFIG = {
@@ -142,3 +147,20 @@ class apiEndpoints:
     def getTemplates(self, spaceId: str, typeId: str, offset: int, limit: int):
         options = {"offset": offset, "limit": limit}
         return self._request("GET", f"/spaces/{spaceId}/types/{typeId}/templates", params=options)
+
+
+T = TypeVar("T", bound="APIWrapper")
+
+class APIWrapper:
+    _apiEndpoints: apiEndpoints | None = None
+
+    @classmethod
+    def _from_api(cls: Type[T], api: apiEndpoints, data: dict) -> T:
+        instance = cls()
+        instance._apiEndpoints = api
+        instance._add_attrs_from_dict(data)
+        return instance
+
+    def _add_attrs_from_dict(self, data: dict) -> None:
+        for key, value in data.items():
+            self.__dict__[key] = value

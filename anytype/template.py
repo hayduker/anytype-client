@@ -1,7 +1,7 @@
-from .api import apiEndpoints
+from .api import apiEndpoints, APIWrapper
 
 
-class Template:
+class Template(APIWrapper):
     def __init__(self):
         self._apiEndpoints: apiEndpoints | None = None
         self.type = ""
