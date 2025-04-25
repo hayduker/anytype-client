@@ -3,9 +3,6 @@ from urllib.parse import urlencode
 from datetime import datetime
 from typing import TypeVar, Type
 
-from rich import print_json
-import json
-
 
 MIN_REQUIRED_VERSION = datetime(2025, 3, 17).date()
 API_CONFIG = {

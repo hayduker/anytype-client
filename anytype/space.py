@@ -8,9 +8,6 @@ from .icon import Icon
 from .api import apiEndpoints, APIWrapper
 from .utils import requires_auth
 
-from rich import print_json
-import json
-
 
 class Space(APIWrapper):
     def __init__(self):

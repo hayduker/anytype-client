@@ -6,9 +6,6 @@ from .object import Object
 from .api import apiEndpoints
 from .utils import requires_auth
 
-from rich import print_json
-import json
-
 
 class Anytype:
     def __init__(self) -> None:
