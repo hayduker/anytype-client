@@ -5,6 +5,7 @@ from .utils import requires_auth
 from rich import print_json
 import json
 
+
 class Type(APIWrapper):
     def __init__(self, name: str = ""):
         self._apiEndpoints: apiEndpoints | None = None
@@ -43,14 +44,17 @@ class Type(APIWrapper):
             raise ValueError(
                 f"Type '{self.name}' does not have " "a template named '{template_name}'"
             )
-    
+
     @requires_auth
     def get_template(self, id: str) -> Template:
         response = self._apiEndpoints.getTemplate(self.space_id, self.id, id)
 
+        # TODO: This API response is unlike the rest, it returns a list for
+        # "data" even though we're asking for info on a single template.
+        # Bug in anytype-heart, or am I misunderstanding?
         datas = response.get("data", [])
         if len(datas) > 1:
-            print(f'getTemplate response data has more than one entry: {response}')
+            print(f"getTemplate response data has more than one entry: {response}")
 
         return Template._from_api(self._apiEndpoints, datas[0])
 

@@ -151,6 +151,7 @@ class apiEndpoints:
 
 T = TypeVar("T", bound="APIWrapper")
 
+
 class APIWrapper:
     _apiEndpoints: apiEndpoints | None = None
 
