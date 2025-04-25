@@ -24,12 +24,18 @@ def get_apispace() -> Space:
 def test_get_spaces():
     spaces = any.get_spaces()
     assert len(spaces) > 0
-    found_space = False
+
+    api_space = False
     for space in spaces:
         if space.name == "API":
-            found_space = True
+            api_space = space
             break
-    assert found_space
+
+    assert api_space
+
+    api_space2 = any.get_space(api_space.id)
+    assert api_space2 is not None
+    assert api_space2.name == api_space.name
 
 
 def test_missspaceid():

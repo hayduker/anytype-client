@@ -5,11 +5,11 @@ import re
 from .block import Block
 from .type import Type
 from .icon import Icon
-from .api import apiEndpoints
+from .api import apiEndpoints, APIWrapper
 from .utils import requires_auth
 
 
-class Object:
+class Object(APIWrapper):
     def __init__(self):
         self._apiEndpoints: apiEndpoints | None = None
         self.id: str = ""

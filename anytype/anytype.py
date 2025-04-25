@@ -76,43 +76,28 @@ class Anytype:
 
     @requires_auth
     def get_space(self, spaceId: str) -> Space:
-        response_data = self._apiEndpoints.getSpace(spaceId)
-        obj = Space()
-        obj._apiEndpoints = self._apiEndpoints
-        for key, value in response_data.get("object", {}).items():
-            obj.__dict__[key] = value
-        return obj
+        response = self._apiEndpoints.getSpace(spaceId)
+        data = response.get("space", {})
+        return Space._from_api(self._apiEndpoints, data)
 
     @requires_auth
     def get_spaces(self, offset=0, limit=10) -> list[Space]:
         response = self._apiEndpoints.getSpaces(offset, limit)
-        results = []
-        for data in response.get("data", []):
-            new_item = Space()
-            new_item._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-
-        return results
+        return [
+            Space._from_api(self._apiEndpoints, data)
+            for data in response.get("data", [])
+        ]
 
     @requires_auth
     def create_space(self, name: str) -> Space:
-        data = self._apiEndpoints.createSpace(name)
-        new_space = Space()
-        new_space._apiEndpoints = self._apiEndpoints
-        for key, value in data["space"].items():
-            new_space.__dict__[key] = value
-        return new_space
+        response = self._apiEndpoints.createSpace(name)
+        data = response.get("space", {})
+        return Space._from_api(self._apiEndpoints, data)
 
     @requires_auth
     def global_search(self, query, offset=0, limit=10) -> list[Object]:
-        response_data = self._apiEndpoints.globalSearch(query, offset, limit)
-        results = []
-        for data in response_data.get("data", []):
-            new_item = Object()
-            new_item._apiEndpoints = self._apiEndpoints
-            for key, value in data.items():
-                new_item.__dict__[key] = value
-            results.append(new_item)
-        return results
+        response = self._apiEndpoints.globalSearch(query, offset, limit)
+        return [
+            Object._from_api(self._apiEndpoints, data)
+            for data in response.get("data", [])
+        ]
