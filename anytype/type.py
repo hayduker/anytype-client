@@ -4,6 +4,10 @@ from .utils import requires_auth
 
 
 class Type(APIWrapper):
+    """
+    The Type class is used to interact with and manage templates in a specific space. It allows for retrieving available templates, setting a specific template for a type, and handling template-related actions within the space.
+    """
+
     def __init__(self, name: str = ""):
         self._apiEndpoints: apiEndpoints | None = None
         self._all_templates = []
@@ -19,6 +23,19 @@ class Type(APIWrapper):
 
     @requires_auth
     def get_templates(self, offset: int = 0, limit: int = 100) -> list[Template]:
+        """
+        Retrieves all templates associated with the type from the API.
+
+        Parameters:
+            offset (int): The offset to start retrieving templates (default: 0).
+            limit (int): The maximum number of templates to retrieve (default: 100).
+
+        Returns:
+            A list of Template objects.
+
+        Raises:
+            Raises an error if the request to the API fails.
+        """
         response = self._apiEndpoints.getTemplates(self.space_id, self.id, offset, limit)
         self._all_templates = [
             Template._from_api(self._apiEndpoints, data)
@@ -27,7 +44,20 @@ class Type(APIWrapper):
 
         return self._all_templates
 
+
     def set_template(self, template_name: str) -> None:
+        """
+        Sets a template for the type by name. If no templates are loaded, it will first fetch all templates.
+
+        Parameters:
+            template_name (str): The name of the template to assign.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If a template with the specified name is not found.
+        """
         if len(self._all_templates) == 0:
             self.get_templates()
 
