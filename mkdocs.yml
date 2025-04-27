@@ -1,0 +1,4 @@
+site_name: Anytype Client Docs
+site_url: https://hayduker.github.io/anytype-client
+theme:
+  name: material
