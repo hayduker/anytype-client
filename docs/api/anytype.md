@@ -1,0 +1,3 @@
+# `anytype.Anytype`
+
+::: anytype.Anytype

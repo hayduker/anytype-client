@@ -1,0 +1,3 @@
+# `anytype.Object`
+
+::: anytype.Object

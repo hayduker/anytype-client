@@ -1,4 +1,14 @@
-site_name: Anytype Client Docs
+site_name: Anytype Client
 site_url: https://hayduker.github.io/anytype-client
 theme:
   name: material
+  palette:
+    scheme: slate
+    primary: indigo
+nav:
+  - Home: index.md
+  - About: about.md
+  - API Reference: api/index.md
+plugins:
+  - search
+  - mkdocstrings
