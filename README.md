@@ -74,7 +74,7 @@ print(f"Created object: {created_object.id}")
 
 ## 📄 Documentation
 
-Check the [Wiki](https://github.com/charlesneimog/anytype-client/wiki)!
+Check the documentation [here](https://hayduker.github.io/anytype-client)!
 
 ## 🤝 Contributing
 
