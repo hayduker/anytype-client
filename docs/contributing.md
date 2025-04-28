@@ -12,4 +12,4 @@ To build the documentation you will need to install `mkdocs` and associated pack
 
 `pip install mkdocs mkdocs-material mkdocstrings[python]`
 
-Then from within your project directory, you can run `mkdocs serve` to start a local HTTP server hosting your copy of the docs. For more information see https://www.mkdocs.org/.
+Then from within your project directory, you can run `mkdocs serve` to start a local HTTP server hosting your copy of the docs. For more information see the [`mkdocs` website](https://www.mkdocs.org/).
