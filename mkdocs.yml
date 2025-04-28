@@ -7,8 +7,9 @@ theme:
     primary: teal
 nav:
   - Home: index.md
-  # - About: about.md
+  - Getting Started: getting-started.md
   - API Reference: api/index.md
+  - Contributing: contributing.md
 plugins:
   - search
   - mkdocstrings
