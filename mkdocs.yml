@@ -4,10 +4,10 @@ theme:
   name: material
   palette:
     scheme: slate
-    primary: indigo
+    primary: teal
 nav:
   - Home: index.md
-  - About: about.md
+  # - About: about.md
   - API Reference: api/index.md
 plugins:
   - search

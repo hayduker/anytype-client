@@ -28,8 +28,6 @@ class Space(APIWrapper):
 
         Parameters:
             objectId (str): The ID of the object to retrieve.
-            offset (int, optional): The offset for pagination (default: 0).
-            limit (int, optional): The limit for the number of results (default: 100).
 
         Returns:
             An Object instance representing the retrieved object.
@@ -131,6 +129,13 @@ class Space(APIWrapper):
 
     @requires_auth
     def get_member(self, memberId: str) -> Member:
+        response = self._apiEndpoints.getMember(self.id, memberId)
+        data = response.get("object", {})
+        return Member._from_api(self._apiEndpoints, data)
+
+
+    @requires_auth
+    def get_members(self, offset: int = 0, limit: int = 100) -> list[Member]:
         """
         Retrieves a list of members associated with the space.
 
@@ -144,13 +149,6 @@ class Space(APIWrapper):
         Raises:
             Raises an error if the request to the API fails.
         """
-        response = self._apiEndpoints.getMember(self.id, memberId)
-        data = response.get("object", {})
-        return Member._from_api(self._apiEndpoints, data)
-
-
-    @requires_auth
-    def get_members(self, offset: int = 0, limit: int = 100) -> list[Member]:
         response = self._apiEndpoints.getMembers(self.id, offset, limit)
         return [
             Member._from_api(self._apiEndpoints, data)

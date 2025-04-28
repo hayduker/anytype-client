@@ -1,17 +1,16 @@
-# Anytype Client
+# Anytype Python Client 
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-GPL3-green)](https://github.com/charlesneimog/anytype-client/blob/main/LICENSE)
 
-## Commands
+A Python client for interacting with [Anytype](https://anytype.io/). Automate workflows and integrate with your apps! ✨
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+---
 
-## Project layout
+## 🚀 Features
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+- **Seamless Integration**: Connect Python scripts directly to your Anytype workspace.
+- **Object Management**: Create, modify, and organize pages, notes, and custom objects.
+- **Space Operations**: Manage spaces, types, and relations programmatically.
+- **Batch Operations**: Export data, automate repetitive tasks, and more.
+- **PDF Import Example**: Bulk import annotated PDFs as structured notes (see [examples](https://github.com/charlesneimog/anytype-client/tree/main/examples)).
