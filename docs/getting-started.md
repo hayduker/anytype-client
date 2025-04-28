@@ -1,15 +1,15 @@
 # Getting Started
 
+## ☑️ Prerequisites
+
+- Python 3.10+
+- Anytype desktop app (v0.44.13-beta or higher) running during authentication
+
 ## 📦 Installation
 
 ```bash
 pip install anytype-client
 ``` 
-
-### Prerequisites:
-
-- Python 3.10+
-- Anytype desktop app (v0.44.13-beta or higher) running during authentication
 
 ## ⚡ Quick Start
 
