@@ -1,0 +1,3 @@
+# `anytype.Type`
+
+::: anytype.Type

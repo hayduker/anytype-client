@@ -1,0 +1,17 @@
+site_name: Anytype Client
+site_url: https://charlesneimog.github.io/anytype-client
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+  logo: assets/any.jpg
+  favicon: assets/any.jpg
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference: api/index.md
+  - Contributing: contributing.md
+plugins:
+  - search
+  - mkdocstrings

@@ -10,6 +10,10 @@ from .utils import requires_auth
 
 
 class Object(APIWrapper):
+    """
+    Used to create and manipulate objects within a specific space. It can be customized with properties like `name`, `icon`, `body`, `description`, and more. The class also provides methods for exporting objects and adding various types of content to the object body, such as titles, text, code blocks, checkboxes, and bullets.
+    """
+
     def __init__(self):
         self._apiEndpoints: apiEndpoints | None = None
         self.id: str = ""
@@ -31,9 +35,11 @@ class Object(APIWrapper):
         self.snippet: str = ""
         self.type_key: str = ""
 
+
     @property
     def icon(self):
         return self._icon
+
 
     @icon.setter
     def icon(self, value):
@@ -53,8 +59,26 @@ class Object(APIWrapper):
             icon.emoji = value
             self._icon = icon
 
+
     @requires_auth
     def export(self, folder: str, format: str = "markdown") -> None:
+        """
+        Exports the object to a specified folder and format (either markdown or protobuf).
+
+        Parameters:
+            folder (str): The path to the output folder where the object will be exported.
+            format (str, optional): The export format, either "markdown" or "protobuf". Default is "markdown".
+
+        Returns:
+            None
+
+        Raises:
+            Raises an error if the request to the API fails.
+
+        Note:
+            If using Linux, a note is printed indicating potential issues with Anytype for Flatpak.
+        """
+
         path = Path(folder)
         if not path.is_absolute():
             path = Path.cwd() / path
@@ -64,9 +88,11 @@ class Object(APIWrapper):
         if platform.system() == "Linux":
             print("Note that this will not work on Anytype for flatpak, even without any errors")
 
+
     def add_type(self, type: Type):
         self.template_id = type.template_id
         self.type_key = type.key
+
 
     # ╭──────────────────────────────────────╮
     # │ Hope that Anytype API make some way  │

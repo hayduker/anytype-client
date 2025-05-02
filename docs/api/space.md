@@ -1,0 +1,3 @@
+# `anytype.Space`
+
+::: anytype.Space
